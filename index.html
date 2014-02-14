@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <title>reveal.js - The HTML Presentation Framework</title>
+<!--
+  <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+  <meta name="author" content="Hakim El Hattab">
+-->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <link rel="stylesheet" href="css/reveal.min.css">
+  <link rel="stylesheet" href="css/theme/moon.css" id="theme">
+
+  <!-- For syntax highlighting -->
+  <link rel="stylesheet" href="lib/css/zenburn.css">
+
+  <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+  <script>
+    document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+  </script>
+
+  <!--[if lt IE 9]>
+  <script src="lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <div class="reveal"><div class="slides">
+
+<!--
+        .oooooo..o oooo   o8o        .o8
+       d8P'    `Y8 `888   `"'       "888
+       Y88bo.       888  oooo   .oooo888   .ooooo.   .oooo.o
+        `"Y8888o.   888  `888  d88' `888  d88' `88b d88(  "8
+            `"Y88b  888   888  888   888  888ooo888 `"Y88b.
+       oo     .d8P  888   888  888   888  888    .o o.  )88b
+       8""88888P'  o888o o888o `Y8bod88P" `Y8bod8P' 8""888P'
+ -->
+
+
+<section data-markdown><script type="text/template">
+    # WebSocket
+    ### Nathan Stilwell
+</script></section>
+<section data-markdown><script type="text/template">
+
+## What is WebSocket?
+
+*a protocol providing full-duplex communications channels over a single TCP connection.*
+
+*standardized by [RFC-6455](https://tools.ietf.org/html/rfc6455)*
+
+*API standardized by the [W3C](http://www.w3.org/TR/2011/WD-websockets-20110929/)*
+<aside class="notes">
+   If youre here tonight, you probably care about the API.
+ </aside>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Why it is Awesome?
++ full-duplex, really real-time communication over one connection
++ Less bandwidth
++ Standard (mostly)
+<aside class="notes">
+  1. HTTP vs WebSocket (Walkie Talkie vs telephone), browser and server are peers
+  2. HTTP headers vs 2 byte overhead
+  3. Backed by the W3C instead of some 3rd party solution like Flash or Comet
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Browser Support
++ IE 10+
++ Firefox 11+
++ Chrome 14+
++ Safari 6+
++ Opera 12.1+
++ iOS Safari 6+
++ Android Browser 4.4+
++ Opera Mobile 12.1+
++ Blackberry 7.0+
++ Chrome for Android 32+
++ Firefox for Android 26+
++ IE Mobile 10+
+<aside class="notes">
+  Modern Browsers, so still consider fallbacks for features that need to working oldIE
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Servers?
+A quick google search shows there are servers written in **Scala, Node, Java, Ruby, Python, C++, .NET, PHP**
+
+My favorites are **Play! (Scala), and einaros/ws (node)**
+<aside class="notes">
+  These are just the ones I looked up. This used to be a problem, but no longer
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Gilt Live
+![](img/gilt-live.png)
+<aside class="notes">
+  a way to show activity
+  we tried out the Play framework because it made websockets really easy
+</aside>
+</script></section>
+
+<!--
+<section data-markdown><script type="text/template">
+## Like Warlock
+<iframe src="//player.vimeo.com/video/23230976" width="900" height="506" frameborder="0"></iframe> <p><a href="http://vimeo.com/23230976">
+<aside class="notes">
+but shoppable
+</aside>
+</script></section>
+-->
+
+<section data-markdown><script type="text/template">
+## Freefall Sales
+<aside class="notes">
+  An experimental sale type that last 5 minutes and during that time, we drop the price by up to 70%
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Inventory Updates
+![](img/inventory-updates.png)
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Sku Attribute Updates
+![](img/sku-attribute-updates.png)
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let&#39;s do this!
+<aside class="notes">
+The API is actually really simple. Like really simple.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## new WebSocket
+
+```javascript
+
+  var cool_socket = new WebSocket('ws://coolsocket.gilt.com');
+  var cool_secure_socket = new WebSocket('wss://tls-socket.gilt.com');
+
+```
+![Handshake](img/http-101.png)
+
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Hook up some callbacks
+
+```javascript
+  // snip ...
+
+  cool_socket.onopen = function onOpen (e) {
+    // socket is open and ready
+  };
+  cool_socket.onmessage = function onMessage (e) {
+    // the socket has received a message
+  };
+  cool_socket.onclose = function onClose (e) {
+    // the socket has closed
+  };
+  cool_socket.onerror = function onError (e) {
+    // the socket has received an error
+  };
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Send messages to the server
+
+```javascript
+  // text message
+  cool_socket.send("a utf-8 message");
+
+  // binary messages
+  var blob = new Blob("I could have been binary data");
+  var arrayBuffer = new Uint8Array([1,2,3,4,5,6]);
+
+  cool_socket.send(blob);
+  cool_socket.send(arrayBuffer.buffer);
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## the ReadyState
+```javascript
+switch (cool_socket.readyState) {
+  case WebSocket.CONNECTING :
+    // Connecting, wait a second
+    break;
+  case WebSocket.OPEN :
+    // Ready to go
+    break;
+  case WebSocket.CLOSING :
+    // Shutting it down
+    break;
+  case WebSocket.CLOSED :
+    // It's over
+    break;
+  default :
+    // Switch statements are not my favorite
+}
+```
+<aside class="notes">
+The readyState attribute represents the state of the connection. The WebSocket Object has the states build into it, so you can compare.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Check it &#39;for you wreck it
+```javascript
+  var cool_socket = new WebSocket('ws://coolsocket.gilt.com');
+  cool_socket.send('I\'m so excited I can\'t wait!'); // Bonk!
+```
+![](img/readyState-error.png)
+```javascript
+  (function tryThis () {
+    if (cool_socket.readyState === WebSocket.OPEN) {
+      cool_socket.send('Go!');
+    } else {
+      console.log('not yet');
+      setTimeout(tryThis, 20);
+    }
+  }())
+  // or
+  cool_socket.onopen = function whenImOpen () {
+    cool_socket.send('Go!'); // OK!
+  }
+```
+![](img/message-send-onopen.png)
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## bufferedAmount
+In case you need to throttle
+```javascript
+  var THRESHOLD = 10240;
+  function sendStuff (stuff) {
+    setTimeout(function () {
+      if (cool_socket.bufferedAmount < THRESHOLD) {
+        cool_socket.send(stuff);
+      }
+    }, 1000);
+  }
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Shut it down
+```javascript
+  cool_socket.close(1000, "Closing normally");
+```
+ socket.close([close code](https://tools.ietf.org/html/rfc6455#section-7.4), "Reason")
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Some things to consider
+Using WebSocket is fun and simple, but there are some gotcha&#39;s and some things you&#39;ve still got to deal with in a mature application
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Failed connections, how to reconnect?
+```javascript
+// weak sauce
+
+cool_socket.onclose = function onClose () {
+  cool_socket = new WebSocket('ws://socket-thing.com');
+}
+
+// but pretty much the idea
+```
+We abstracted the "reconnect" (which is just making a new socket), and build some logic to iterate reconnect attempts.
+<aside class="notes">
+WebSocket connections can break the same as any other network connection, so you&#39;ll need to be ready for it. The WebSocket will be kind enough to call your onclose callback, but the reconnection is up to you.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Pings and Pongs to keep you connection alive
+```javascript
+  cool_socket.onopen = function onOpen () {
+    sendHeartbeat();
+  };
+  cool_socket.onclose = function onClose () {
+    clearTimeout(heartbeatTimeout);
+  };
+  function sendHeartbeat () {
+    cool_socket.send('ping');
+    heartbeatTimeout = setTimeout(sendHeartbeat, 30000);
+  }
+```
+<aside class="notes">
+The WebSocket protocol supports ping and pong frames for keep alive, but the WebSocket API does not support client initiated ping and pongs. The browser may send pings and pongs based on its own keep-alive policy. At Gilt, we chose to implement heartbeats at a higher level, having the client send a heartbeat at an expected interval to keep track of dead connections to the server.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Parsing message "types"
+WebSocket sends messages using the MessageEvent API
+[http://www.w3.org/TR/2010/WD-webmessaging-20101118/](http://www.w3.org/TR/2010/WD-webmessaging-20101118/)
+![](img/messageEvent.png)
+
+The payload is in the `data`
+```javascript
+  cool_socket.onmessage = function onMessage (e) {
+    e.data; // the payload
+  }
+```
+<aside class="notes">
+WebSocket uses the MessageEvent API, in which each message has a data attribute used for payload. At Gilt we found it necessary to have to look at each of those messages and determine if the message was to sync a clock or change a price or update inventory or sku status. To make this a little easier we added a "type" field to the data property.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Parsing message "types" (cont.)
+WebSocket provides a single callback for all messages, so if you are sending different kinds of messages you&#39;ll have to seperate them
+```javascript
+// excerpt from web-freefall
+notify.subscribe('freefall/socket/message', function (msg) {
+  if (msg.type === "PriceChange") {
+    // *snip*
+  }
+  if (msg.type === "PriceChangeBootstrap") {
+    // *snip*
+  }
+  if (msg.type === "Time") {
+    // *snip*
+  }
+  if (msg.type === 'ViewCount') {
+    // *snip*
+  }
+});
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Test for WebSocket support
+```javascript
+  if (window.WebSocket) {
+    // have at it
+    cool_socket = new WebSocket('ws://youknowthedrill.com');
+  } else {
+    // rut roh, ajax fallback or go home
+  }
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<!-- sample slide -->
+<section data-markdown><script type="text/template">
+<aside class="notes">
+</aside>
+</script></section>
+
+  </div><!-- / slides -->
+</div><!-- / reveal -->
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+    <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: false,
+        progress: true,
+        history: true,
+        center: true,
+
+        // theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: 'fade', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+  </body>
+</html>
