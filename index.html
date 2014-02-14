@@ -4,11 +4,11 @@
 <head>
   <meta charset="utf-8">
 
-  <title>reveal.js - The HTML Presentation Framework</title>
-<!--
-  <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-  <meta name="author" content="Hakim El Hattab">
--->
+  <title>WebSockets Rule!</title>
+
+  <meta name="description" content="This is where I talk about using WebSocket and JavaScript">
+  <meta name="author" content="Nathan Stilwell">
+
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
@@ -16,6 +16,7 @@
 
   <link rel="stylesheet" href="css/reveal.min.css">
   <link rel="stylesheet" href="css/theme/moon.css" id="theme">
+  <link rel="stylesheet" href="css/override.css">
 
   <!-- For syntax highlighting -->
   <link rel="stylesheet" href="lib/css/zenburn.css">
@@ -48,28 +49,59 @@
     # WebSocket
     ### Nathan Stilwell
 </script></section>
+
 <section data-markdown><script type="text/template">
 ## Nathan Stilwell
 ## (Front-end) Software Engineer @ Gilt
 ### github.com/nathanstilwell
+### @nathanstilwell or @nathandrinks
 
 <aside class="notes">
 Introduce yourself
+I don&#39;t really use Twitter
 </aside>
 </script></section>
+
 <section data-markdown><script type="text/template">
+## What are we doing?
++ What&#39;s a WebSocket? <!-- .element: class="fragment roll-in" -->
++ How do you use it? <!-- .element: class="fragment roll-in" -->
++ Some stuff you&#39;ll deal with <!-- .element: class="fragment roll-in" -->
++ unless you use SocketWrench (I wrote it!) <!-- .element: class="fragment roll-in" -->
++ Then I prove how easy this all is (Demo Code!) <!-- .element: class="fragment roll-in" -->
 
+<aside class="notes">
+<p> What a WebSocket is, but mostly in the browser (window.WebSocket)</p>
+<p> How to use the WebSocket API</p>
+<p> Some of the concerns we&#39;ve encountered making applications at Gilt</p>
+<p> I made something to make my life easier, you might like it</p>
+<p> Then we&#39;ll look at a really simple demo</p>
+</aside>
+</script>
+</section>
+
+<section data-markdown><script type="text/template">
+## Trivial Demo!
+##[bit.ly/stupid-chat](http://bit.ly/stupid-chat)
+
+What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -->
+<aside class="notes">
+  A SocketWrench based client running on Github, hitting a Node-based socket server
+  running on Heroku
+  Play with that for a little bit, or put some questions in there, and we&#39;ll dig
+  into the code at the end.
+  Next week it should work better on your phone. :(
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
 ## What is WebSocket?
-
-*a protocol providing full-duplex communications channels over a single TCP connection.*
-
-*standardized by [RFC-6455](https://tools.ietf.org/html/rfc6455)*
-
-*API standardized by the [W3C](http://www.w3.org/TR/2011/WD-websockets-20110929/)*
++ *a protocol providing full-duplex communications channels over a single TCP connection.*
++ *standardized by [RFC-6455](https://tools.ietf.org/html/rfc6455)*
++ *API standardized by the [W3C](http://www.w3.org/TR/2011/WD-websockets-20110929/)*
 <aside class="notes">
    If youre here tonight, you probably care about the API.
  </aside>
-
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -114,11 +146,23 @@ My favorites are **Play! (Scala), and einaros/ws (node)**
 </script></section>
 
 <section data-markdown><script type="text/template">
+## How Gilt met WebSocket
+<aside class="notes">
+2011 - New Initiative "Customer" Excitement
+Show actvity on the site
+We wanted to play with some new toys
+</aside>
+</script></section>
+
+
+<section data-markdown><script type="text/template">
 ## Gilt Live
 ![](img/gilt-live.png)
 <aside class="notes">
-  a way to show activity
   we tried out the Play framework because it made websockets really easy
+  It listens to a service and sends socket messages to clients, that create Backbone
+  Views. It also sends inventory updates so users can see what is selling out.
+  It was a really fun experiment
 </aside>
 </script></section>
 
@@ -134,8 +178,11 @@ but shoppable
 
 <section data-markdown><script type="text/template">
 ## Freefall Sales
+![](img/freefall.gif)
 <aside class="notes">
   An experimental sale type that last 5 minutes and during that time, we drop the price by up to 70%
+  We used WebSocket to communicate the price dropping for everyone in the sale at the same time, and
+  since inventory was limited, we needed acurate purchase times. Also we used inventory updates.
 </aside>
 </script></section>
 
@@ -143,6 +190,7 @@ but shoppable
 ## Inventory Updates
 ![](img/inventory-updates.png)
 <aside class="notes">
+  Having used it in the past two apps, we moved the functionality to the listing page
 </aside>
 </script></section>
 
@@ -150,6 +198,8 @@ but shoppable
 ## Sku Attribute Updates
 ![](img/sku-attribute-updates.png)
 <aside class="notes">
+  We rewrote the Product Detail Page last year, and since we were on a WebSocket
+  roll we decided to listen to sku attribute updates and reflect live changes
 </aside>
 </script></section>
 
@@ -302,6 +352,23 @@ Using WebSocket is fun and simple, but there are some gotcha&#39;s and some thin
 </script></section>
 
 <section data-markdown><script type="text/template">
+## Test for WebSocket support
+```javascript
+  if (window.WebSocket) {
+    // have at it
+    cool_socket = new WebSocket('ws://youknowthedrill.com');
+  } else {
+    // rut roh, ajax fallback or go home
+  }
+```
+<aside class="notes">
+  This seems obvious, but support is something to consider before beginning.
+  Some applications can have an ajax fallback, some applications may not need to
+  work in all browsers.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
 ## Failed connections, how to reconnect?
 ```javascript
 // weak sauce
@@ -379,18 +446,155 @@ notify.subscribe('freefall/socket/message', function (msg) {
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Test for WebSocket support
+## Paving the cow path
+Having build a few applications and features built on WebSocket, we&#39;ve
+solved some of the same problems a few times. And if you write something 3 times,
+it&#39;s probably time for an abstraction.
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Socket Wrench
+### [https://github.com/nathanstilwell/socket-wrench](https://github.com/nathanstilwell/socket-wrench)
+A light wrapper around native WebSocket with a more comfortable API
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Socket Wrench API
 ```javascript
-  if (window.WebSocket) {
-    // have at it
-    cool_socket = new WebSocket('ws://youknowthedrill.com');
-  } else {
-    // rut roh, ajax fallback or go home
-  }
+var wrench = new SocketWrench('ws://some-web-socket.com');
+
+wrench.open(); // Open WebSocket explicitly
+wrench.close(); // Close WebSocket explicitly
+wrench.isReady(); // Check WebSocket ReadyState
+wrench.on(event, callback); // Add a callback to an event. returns handle
+wrench.off(handle); // Remove a callback from an event
+wrench.send(message); // Send a message to the server
+wrench.supported; // Check to see if WebSocket is supported. This is a Boolean
 ```
 <aside class="notes">
 </aside>
 </script></section>
+
+<section data-markdown><script type="text/template">
+## SocketWrench.on()
+```javascript
+wrench.on('open', ...); // onopen
+wrench.on('close', ...); // onclose
+wrench.on('fail', ...);  // onclose when you didn't close it
+wrench.on('error', ...); // onerror
+wrench.on('ready', ...); // when the readyState is OPEN
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## SocketWrench.on('message', [callback])
+Socket wrench publishes a `message` event when the WebSocket receives a
+message. But SocketWrench also parses `event.data.type` if it exists and will
+publish an event of that type.
+```javascript
+wrench.on('message', ...); // for every message, regardless of type
+wrench.on('PriceChange', ...)
+wrench.on('PriceChangeBootstrap', ...)
+wrench.on('Time', ...)
+wrench.on('ViewCount', ...)
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Buffering messages while you&#39;re not connected
+```javascript
+var wrench = new SocketWrench('ws://whatever.blah');
+// messages will get buffered until your WebSocket is connected
+wrench.send('I');
+wrench.send('don\'t');
+wrench.send('care');
+wrench.send('about');
+// and then get sent, once the connection is ready
+wrench.send('ready');
+wrench.send('state');
+wrench.send('.');
+// It will also buffer messages, during a inexpected disconnect
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Reconnection handling
+If the WebSocket connection is lost without explicitly calling `close`,
+SocketWrench will attempt to reconnect based on config options.
+```javascript
+var wrench = new SocketWrench({
+  url: 'ws://whatever.blah',
+  retryAttempts: 5,       // try to reconnect 5 times
+  retryTimeout: 2000      // wait 2 seconds before trying to connect again
+});
+```
+Retry attempts *decay*, so SocketWrench waits longer each time to reconnect
+```javascript
+function decay (timeout, attempts) {
+  return timeout * attempts;
+};
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Heartbeats / Pings / Pongs
+SocketWrench will send a text string "pong" to the server every 30 seconds to keep
+the connection alive, as well as responding to a text "ping" message with a "pong".
+If you want this heartbeat to be something else, you can override it in the config
+options.
+```javascript
+var wrench = new SocketWrench({
+  url: 'ws://my-socket-server.com',
+  heartbeatInterval: 60000, // in milliseconds
+  // could be json or a string
+  heartbeatMessage : {
+    status : 'still alive',
+    currentMood : 'happy',
+    outlookOnLife : 'good'
+  }
+});
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let&#39;s tear appart that trivial demo
+<aside class="notes">
+  Crack open Sublime Text and reveal how stupidly simple it is.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Learn more
++ [www.html5rocks.com/en/tutorials/websockets/basics/](http://www.html5rocks.com/en/tutorials/websockets/basics/)
++ [www.websocket.org/](http://www.websocket.org/)
++ [The Definitive Guide to HTML5 WebSocket](http://www.amazon.com/Definitive-Guide-HTML5-WebSocket-Apress/dp/1430247401)
+<aside class="notes">
+  There&#39;s not a ton, but the book is really good.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Thanks for listening
+### [bit.ly/socket-talk](http://bit.ly/socket-talk) // just in case
+<aside class="notes">
+</aside>
+</script></section>
+
+
 
 <!-- sample slide -->
 <section data-markdown><script type="text/template">
