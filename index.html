@@ -54,7 +54,7 @@
 ## Nathan Stilwell
 ## (Front-end) Software Engineer @ Gilt
 ### github.com/nathanstilwell
-### @nathanstilwell or @nathandrinks
+### @nathanstilwell
 
 <aside class="notes">
 Introduce yourself
@@ -66,8 +66,8 @@ I don&#39;t really use Twitter
 ## What are we doing?
 + What&#39;s a WebSocket? <!-- .element: class="fragment roll-in" -->
 + How do you use it? <!-- .element: class="fragment roll-in" -->
-+ Some stuff you&#39;ll deal with <!-- .element: class="fragment roll-in" -->
-+ unless you use SocketWrench (I wrote it!) <!-- .element: class="fragment roll-in" -->
++ Some stuff you&#39;ll deal with, <!-- .element: class="fragment roll-in" -->
++ &nbsp;&nbsp;&nbsp; unless you use SocketWrench (I wrote it!) <!-- .element: class="fragment roll-in" -->
 + Then I prove how easy this all is (Demo Code!) <!-- .element: class="fragment roll-in" -->
 
 <aside class="notes">
@@ -96,16 +96,16 @@ What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -
 
 <section data-markdown><script type="text/template">
 ## What is WebSocket?
-+ *a protocol providing full-duplex communications channels over a single TCP connection.*
-+ *standardized by [RFC-6455](https://tools.ietf.org/html/rfc6455)*
-+ *API standardized by the [W3C](http://www.w3.org/TR/2011/WD-websockets-20110929/)*
++ *"a protocol providing full-duplex communications channels over a single TCP connection."*
++ IETF standardized in [RFC-6455](https://tools.ietf.org/html/rfc6455)
++ API standardized by the [W3C](http://www.w3.org/TR/2011/WD-websockets-20110929/)
 <aside class="notes">
    If youre here tonight, you probably care about the API.
  </aside>
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Why it is Awesome?
+## Why is it Awesome?
 + full-duplex, really real-time communication over one connection
 + Less bandwidth
 + Standard (mostly)
@@ -285,7 +285,7 @@ The readyState attribute represents the state of the connection. The WebSocket O
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Check it &#39;for you wreck it
+## Check it before you wreck it
 ```javascript
   var cool_socket = new WebSocket('ws://coolsocket.gilt.com');
   cool_socket.send('I\'m so excited I can\'t wait!'); // Bonk!
@@ -339,7 +339,7 @@ In case you need to throttle
 
 <section data-markdown><script type="text/template">
 ## Some things to consider
-Using WebSocket is fun and simple, but there are some gotcha&#39;s and some things you&#39;ve still got to deal with in a mature application
+Using WebSocket is fun and simple, but there are some things to deal with in a mature application
 <aside class="notes">
 </aside>
 </script></section>
@@ -364,7 +364,7 @@ Using WebSocket is fun and simple, but there are some gotcha&#39;s and some thin
 <section data-markdown><script type="text/template">
 ## Use the opening handshake for setup
 The WebSocket protocol allows for custom headers, but not the WebSocket API.
-But we&#39;ve still got the query string
+But we&#39;ve still got the query string.
 ```javascript
   var url = 'ws://socket-server.com';
   // add to the query string
@@ -411,7 +411,7 @@ WebSocket connections can break the same as any other network connection, so you
     heartbeatTimeout = setTimeout(sendHeartbeat, 30000);
   }
 ```
-Let the server know, you&#39;re still alive
+Let the server know you&#39;re still alive
 <aside class="notes">
 The WebSocket protocol supports ping and pong frames for keep alive, but the WebSocket API does not support client initiated ping and pongs. The browser may send pings and pongs based on its own keep-alive policy. At Gilt, we chose to implement heartbeats at a higher level, having the client send a heartbeat at an expected interval to keep track of dead connections to the server. If you connection is interrupted before the browser can send a closing handshake, your server might not realize it&#39;s missing. So we used healthchecks to shut down inactive connections.
 </aside>
@@ -419,8 +419,7 @@ The WebSocket protocol supports ping and pong frames for keep alive, but the Web
 
 <section data-markdown><script type="text/template">
 ## Parsing message "types"
-WebSocket sends messages using the MessageEvent API
-[http://www.w3.org/TR/2010/WD-webmessaging-20101118/](http://www.w3.org/TR/2010/WD-webmessaging-20101118/)
+WebSocket sends messages using the [MessageEvent API](http://www.w3.org/TR/2010/WD-webmessaging-20101118/)
 ![](img/messageEvent.png)
 
 The payload is in the `data`
@@ -436,7 +435,7 @@ WebSocket uses the MessageEvent API, in which each message has a data attribute 
 
 <section data-markdown><script type="text/template">
 ## Parsing message "types" (cont.)
-WebSocket provides a single callback for all messages, so if you are sending different kinds of messages you&#39;ll have to seperate them
+WebSocket provides a single callback for all messages, so if you are sending different kinds of messages you&#39;ll have to separate them
 ```javascript
 // excerpt from web-freefall
 notify.subscribe('freefall/socket/message', function (msg) {
@@ -460,7 +459,7 @@ notify.subscribe('freefall/socket/message', function (msg) {
 
 <section data-markdown><script type="text/template">
 ## Paving the cow path
-Having build a few applications and features built on WebSocket, we&#39;ve
+Having built a few applications and features built on WebSocket, we&#39;ve
 solved some of the same problems a few times. And if you write something 3 times,
 it&#39;s probably time for an abstraction.
 <aside class="notes">
@@ -520,7 +519,7 @@ wrench.on('ready', ...); // when the readyState is OPEN
 
 <section data-markdown><script type="text/template">
 ## SocketWrench.on('message', [callback])
-Socket wrench publishes a `message` event when the WebSocket receives a
+SocketWrench emits a `message` event when the WebSocket receives a
 message. But SocketWrench also parses `event.data.type` if it exists and will
 emit an event of that type.
 ```javascript
