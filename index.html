@@ -118,6 +118,8 @@ What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -
 
 <section data-markdown><script type="text/template">
 ## Browser Support
+[caniuse.com/#search=websocket](http://caniuse.com/#search=websocket)
+
 + IE 10+
 + Firefox 11+
 + Chrome 14+
@@ -139,6 +141,7 @@ What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -
 ## Servers?
 A quick google search shows there are servers written in **Scala, Node, Java, Ruby, Python, C++, .NET, PHP**
 
+<br />
 My favorites are **Play! (Scala), and einaros/ws (node)**
 <aside class="notes">
   These are just the ones I looked up. This used to be a problem, but no longer
@@ -165,16 +168,6 @@ We wanted to play with some new toys
   It was a really fun experiment
 </aside>
 </script></section>
-
-<!--
-<section data-markdown><script type="text/template">
-## Like Warlock
-<iframe src="//player.vimeo.com/video/23230976" width="900" height="506" frameborder="0"></iframe> <p><a href="http://vimeo.com/23230976">
-<aside class="notes">
-but shoppable
-</aside>
-</script></section>
--->
 
 <section data-markdown><script type="text/template">
 ## Freefall Sales
@@ -369,6 +362,25 @@ Using WebSocket is fun and simple, but there are some gotcha&#39;s and some thin
 </script></section>
 
 <section data-markdown><script type="text/template">
+## Use the opening handshake for setup
+The WebSocket protocol allows for custom headers, but not the WebSocket API.
+But we&#39;ve still got the query string
+```javascript
+  var url = 'ws://socket-server.com';
+  // add to the query string
+  url += '?';
+  url += 'userId=nathanstilwell';
+  url += '&';
+  url += 'eventId=1834';
+  url += '&';
+  url += 'isThisGuyCool=yes';
+  coolsocket = new WebSocket(url);
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
 ## Failed connections, how to reconnect?
 ```javascript
 // weak sauce
@@ -386,7 +398,7 @@ WebSocket connections can break the same as any other network connection, so you
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Pings and Pongs to keep your connection alive
+## Healthchecks to monitor your connections
 ```javascript
   cool_socket.onopen = function onOpen () {
     sendHeartbeat();
@@ -399,8 +411,9 @@ WebSocket connections can break the same as any other network connection, so you
     heartbeatTimeout = setTimeout(sendHeartbeat, 30000);
   }
 ```
+Let the server know, you&#39;re still alive
 <aside class="notes">
-The WebSocket protocol supports ping and pong frames for keep alive, but the WebSocket API does not support client initiated ping and pongs. The browser may send pings and pongs based on its own keep-alive policy. At Gilt, we chose to implement heartbeats at a higher level, having the client send a heartbeat at an expected interval to keep track of dead connections to the server.
+The WebSocket protocol supports ping and pong frames for keep alive, but the WebSocket API does not support client initiated ping and pongs. The browser may send pings and pongs based on its own keep-alive policy. At Gilt, we chose to implement heartbeats at a higher level, having the client send a heartbeat at an expected interval to keep track of dead connections to the server. If you connection is interrupted before the browser can send a closing handshake, your server might not realize it&#39;s missing. So we used healthchecks to shut down inactive connections.
 </aside>
 </script></section>
 
@@ -463,6 +476,19 @@ A light wrapper around native WebSocket with a more comfortable API
 </script></section>
 
 <section data-markdown><script type="text/template">
+## The F's and B's
++ Event emmiter API
++ Explicit open and close
++ Message Buffering while not connected
++ Reconnection handling
++ Healthcheck and custom heartbeats
++ Connection Data (Pass data on the query string of the opening handshake)
++ JSON parsing
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
 ## Socket Wrench API
 ```javascript
 var wrench = new SocketWrench('ws://some-web-socket.com');
@@ -496,7 +522,7 @@ wrench.on('ready', ...); // when the readyState is OPEN
 ## SocketWrench.on('message', [callback])
 Socket wrench publishes a `message` event when the WebSocket receives a
 message. But SocketWrench also parses `event.data.type` if it exists and will
-publish an event of that type.
+emit an event of that type.
 ```javascript
 wrench.on('message', ...); // for every message, regardless of type
 wrench.on('PriceChange', ...)
@@ -550,8 +576,8 @@ function decay (timeout, attempts) {
 
 <section data-markdown><script type="text/template">
 ## Heartbeats / Pings / Pongs
-SocketWrench will send a text string "pong" to the server every 30 seconds to keep
-the connection alive, as well as responding to a text "ping" message with a "pong".
+SocketWrench will send a text string "pong" to the server every 30 seconds to maintain
+the connection, as well as responding to a text "ping" message with a "pong".
 If you want this heartbeat to be something else, you can override it in the config
 options.
 ```javascript
@@ -571,9 +597,79 @@ var wrench = new SocketWrench({
 </script></section>
 
 <section data-markdown><script type="text/template">
+## SocketWrench still experimental
+
++ No binary data support
++ Terrible test coverage
++ Known bugs
+
+<br/>
+#### Try it out, file some bugs, use it as a reference.
+<aside class="notes">
+</aside>
+</script></section>
+
+
+<section data-markdown><script type="text/template">
 ## Let&#39;s tear apart that trivial demo
+[bit.ly/stupid-chat-code](http://bit.ly/stupid-chat-code)
 <aside class="notes">
   Crack open Sublime Text and reveal how stupidly simple it is.
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## The Server
+```javascript
+// node
+// using ws by einaros
+server.broadcast = function (data) {
+  for (var i in this.clients) {
+    this.clients[i].send(data);
+  }
+};
+
+server.on('connection', function connected (socket) {
+  socket.send('hello');
+  socket.on('message', function (message) {
+    if ('pong' !== message) {
+      console.log('received: %s', message);
+      server.broadcast(message);
+    }
+  });
+});
+```
+<aside class="notes">
+</aside>
+</script></section>
+
+<section data-markdown><script type="text/template">
+## The Client
+```javascript
+// get JQuery and SocketWrench
+//
+//  not showing lots of DOM code, Key listeners, etc
+//
+  wrench = new SocketWrench({
+    url : 'wss://sheltered-headland-5539.herokuapp.com'
+  });
+
+  wrench.on('chat', function onMessage (msg) {
+    addMessage(msg.message, msg.color);
+    scroll();
+  });
+  // gets called by key listener
+  function transmitMessage (message) {
+    var msg = {
+      type: 'chat',
+      message: message,
+      color: randomColor
+    };
+    wrench.send(msg);
+  }
+```
+Not worrying about JSON.stringify/parse, message buffering, reconnection handling, or healthchecks
+<aside class="notes">
 </aside>
 </script></section>
 
@@ -625,7 +721,6 @@ var wrench = new SocketWrench({
           { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
           { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
           { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-          { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
           { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
         ]
       });
