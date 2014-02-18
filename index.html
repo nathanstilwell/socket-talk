@@ -46,7 +46,7 @@
 
 
 <section data-markdown><script type="text/template">
-    # WebSocket
+    # Using the WebSocket API @ Gilt
     ### Nathan Stilwell
 </script></section>
 
@@ -84,7 +84,7 @@ I don&#39;t really use Twitter
 ## Trivial Demo!
 ##[bit.ly/stupid-chat](http://bit.ly/stupid-chat)
 
-What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -->
+What&#39;s a WebSocket talk without a chat demo? <!-- .element: class="center-it" -->
 <aside class="notes">
   A SocketWrench based client running on Github, hitting a Node-based socket server
   running on Heroku
@@ -97,7 +97,7 @@ What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -
 <section data-markdown><script type="text/template">
 ## What is WebSocket?
 + *"a protocol providing full-duplex communications channels over a single TCP connection."*
-+ IETF standardized in [RFC-6455](https://tools.ietf.org/html/rfc6455)
++ International Engineering Task Force standard, [RFC-6455](https://tools.ietf.org/html/rfc6455)
 + API standardized by the [W3C](http://www.w3.org/TR/2011/WD-websockets-20110929/)
 <aside class="notes">
    If youre here tonight, you probably care about the API.
@@ -106,7 +106,7 @@ What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -
 
 <section data-markdown><script type="text/template">
 ## Why is it Awesome?
-+ full-duplex, really real-time communication over one connection
++ full-duplex, genuine real-time communication over one connection
 + Less bandwidth
 + Standard (mostly)
 <aside class="notes">
@@ -139,10 +139,10 @@ What&#39;s a WebSocket talk with a chat demo? <!-- .element: class="center-it" -
 
 <section data-markdown><script type="text/template">
 ## Servers?
-A quick google search shows there are servers written in **Scala, Node, Java, Ruby, Python, C++, .NET, PHP**
+A quick Google search shows there are servers written in **Scala, Node, Java, Ruby, Python, C++, .NET, PHP**
 
 <br />
-My favorites are **Play! (Scala), and einaros/ws (node)**
+My favorites are **Play Framework (Scala), and einaros/ws (Node.js)**
 <aside class="notes">
   These are just the ones I looked up. This used to be a problem, but no longer
 </aside>
@@ -188,7 +188,7 @@ We wanted to play with some new toys
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Sku Attribute Updates
+## SKU Attribute Updates
 ![](img/sku-attribute-updates.png)
 <aside class="notes">
   We rewrote the Product Detail Page last year, and since we were on a WebSocket
@@ -339,7 +339,7 @@ In case you need to throttle
 
 <section data-markdown><script type="text/template">
 ## Some things to consider
-Using WebSocket is fun and simple, but there are some things to deal with in a mature application
+Using WebSocket is fun and simple but when working with a mature application, be mindful of these things ...
 <aside class="notes">
 </aside>
 </script></section>
@@ -363,7 +363,7 @@ Using WebSocket is fun and simple, but there are some things to deal with in a m
 
 <section data-markdown><script type="text/template">
 ## Use the opening handshake for setup
-The WebSocket protocol allows for custom headers, but not the WebSocket API.
+The WebSocket protocol allows for custom headers, but the WebSocket API does not.
 But we&#39;ve still got the query string.
 ```javascript
   var url = 'ws://socket-server.com';
@@ -391,7 +391,7 @@ cool_socket.onclose = function onClose () {
 
 // but pretty much the idea
 ```
-We abstracted the "reconnect" (which is just making a new socket), and build some logic to iterate reconnect attempts.
+At Gilt, we abstracted the "reconnect" (which is just making a new socket), and built some logic to iterate reconnection attempts.
 <aside class="notes">
 WebSocket connections can break the same as any other network connection, so you&#39;ll need to be ready for it. The WebSocket will be kind enough to call your onclose callback, but the reconnection is up to you.
 </aside>
@@ -459,7 +459,7 @@ notify.subscribe('freefall/socket/message', function (msg) {
 
 <section data-markdown><script type="text/template">
 ## Paving the cow path
-Having built a few applications and features built on WebSocket, we&#39;ve
+Having built a few applications and features on WebSocket, we&#39;ve
 solved some of the same problems a few times. And if you write something 3 times,
 it&#39;s probably time for an abstraction.
 <aside class="notes">
@@ -467,7 +467,7 @@ it&#39;s probably time for an abstraction.
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Socket Wrench
+## SocketWrench
 ### [https://github.com/nathanstilwell/socket-wrench](https://github.com/nathanstilwell/socket-wrench)
 A light wrapper around native WebSocket with a more comfortable API
 <aside class="notes">
@@ -476,19 +476,19 @@ A light wrapper around native WebSocket with a more comfortable API
 
 <section data-markdown><script type="text/template">
 ## The F's and B's
-+ Event emmiter API
++ Event emitter API
 + Explicit open and close
-+ Message Buffering while not connected
++ Message buffering while not connected
 + Reconnection handling
 + Healthcheck and custom heartbeats
-+ Connection Data (Pass data on the query string of the opening handshake)
++ Connection Data (pass data on the query string of the opening handshake)
 + JSON parsing
 <aside class="notes">
 </aside>
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Socket Wrench API
+## SocketWrench API
 ```javascript
 var wrench = new SocketWrench('ws://some-web-socket.com');
 
@@ -546,7 +546,7 @@ wrench.send('about');
 wrench.send('ready');
 wrench.send('state');
 wrench.send('.');
-// It will also buffer messages, during a inexpected disconnect
+// It will also buffer messages, during a unexpected disconnect
 ```
 <aside class="notes">
 </aside>
@@ -576,14 +576,14 @@ function decay (timeout, attempts) {
 <section data-markdown><script type="text/template">
 ## Heartbeats / Pings / Pongs
 SocketWrench will send a text string "pong" to the server every 30 seconds to maintain
-the connection, as well as responding to a text "ping" message with a "pong".
+the connection, and respond to a text "ping" message with a "pong".
 If you want this heartbeat to be something else, you can override it in the config
 options.
 ```javascript
 var wrench = new SocketWrench({
   url: 'ws://my-socket-server.com',
   heartbeatInterval: 60000, // in milliseconds
-  // could be json or a string
+  // could either JSON or a string
   heartbeatMessage : {
     status : 'still alive',
     currentMood : 'happy',
@@ -645,7 +645,7 @@ server.on('connection', function connected (socket) {
 <section data-markdown><script type="text/template">
 ## The Client
 ```javascript
-// get JQuery and SocketWrench
+// get jQuery and SocketWrench
 //
 //  not showing lots of DOM code, Key listeners, etc
 //
@@ -685,6 +685,7 @@ Not worrying about JSON.stringify/parse, message buffering, reconnection handlin
 <section data-markdown><script type="text/template">
 ## Thanks for listening
 ### [bit.ly/socket-talk](http://bit.ly/socket-talk) // just in case
+### Slides available at [tech.gilt.com](http://tech.gilt.com)
 <aside class="notes">
 </aside>
 </script></section>
